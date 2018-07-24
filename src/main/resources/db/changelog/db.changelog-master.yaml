@@ -1,0 +1,5 @@
+databaseChangeLog:
+- include: {file: 2018-07/2018-07-19-create-table-person.sql, relativeToChangelogFile: true}
+- include: {file: 2018-07/2018-07-19-create-table-role.sql, relativeToChangelogFile: true}
+- include: {file: 2018-07/2018-07-19-create-table-person_role.sql, relativeToChangelogFile: true}
+- include: {file: 2018-07/2018-07-19-insert-role.sql, relativeToChangelogFile: true}

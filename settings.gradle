@@ -1,0 +1,10 @@
+pluginManagement {
+    repositories {
+        mavenLocal()
+        maven { url 'http://localhost:8091/repository/maven-public/' }
+//        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = 'rfad-user-api'
