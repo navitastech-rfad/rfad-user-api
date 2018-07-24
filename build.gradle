@@ -32,7 +32,7 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '2.0.3.RELEASE' apply false
+    id 'org.springframework.boot' version '2.0.3.RELEASE'
     id 'org.sonarqube' version '2.6.2'
     id 'io.spring.dependency-management'  version '1.0.6.RELEASE'
     id 'eclipse'
@@ -59,11 +59,6 @@ configurations {
     all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 }
 
-dependencyManagement {
-    imports {
-        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
-    }
-}
 dependencies {
     compile libs.spring.boot
     compile libs.db
