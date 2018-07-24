@@ -1,0 +1,120 @@
+buildscript {
+    ext {
+        libs = [
+            spring: [
+                boot: [
+                    'org.springframework.boot:spring-boot-starter-web',
+                    'org.springframework.boot:spring-boot-starter-data-jpa',
+                    'org.springframework.boot:spring-boot-starter-jdbc',
+                    'org.springframework.boot:spring-boot-starter-log4j2',
+                    'org.springframework.boot:spring-boot-starter-security'
+                ]
+            ],
+
+            db: [
+                'org.postgresql:postgresql',
+                'org.liquibase:liquibase-core'
+            ],
+            
+            test: [
+                'org.springframework.boot:spring-boot-starter-test'
+            ],            
+
+            misc: [
+                'io.jsonwebtoken:jjwt:0.9.1',
+                'javax.inject:javax.inject:1',
+                'commons-io:commons-io:2.5',
+                'commons-collections:commons-collections:3.2.2',
+                'org.slf4j:slf4j-api'               
+            ]
+        ]
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '2.0.3.RELEASE' apply false
+    id 'org.sonarqube' version '2.6.2'
+    id 'io.spring.dependency-management'  version '1.0.6.RELEASE'
+    id 'eclipse'
+    id 'jacoco'
+    id 'java'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+    }
+}
+
+group = 'com.navitas'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    maven {  url "http://localhost:8091/repository/maven-public/" }
+	mavenCentral()
+}
+
+configurations {
+    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+    }
+}
+dependencies {
+    compile libs.spring.boot
+    compile libs.db
+    compile libs.misc
+    
+    testCompile libs.test
+}
+
+jacoco {
+    toolVersion = "0.8.1"
+//    reportsDir = file("$buildDir/reports")
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule { limit { minimum = 0.50 } }
+    }
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled true
+        csv.enabled false
+    }
+
+    dependsOn jacocoTestCoverageVerification
+
+    sourceDirectories = files(sourceSets.main.allSource.srcDirs)
+    classDirectories = files(files(sourceSets.main.output).collect {
+        fileTree(dir: it)
+    })
+}
+
+//test {
+//    jacoco {
+//        append = false
+//        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+//        classDumpDir = file("$buildDir/jacoco/classpathdumps")
+//    }
+//}
+
+tasks.withType(Test) {
+    finalizedBy jacocoTestReport
+
+    reports {
+        html.destination =file("${reporting.baseDir}/${name}")
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.9'
+}

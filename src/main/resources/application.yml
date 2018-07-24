@@ -1,0 +1,10 @@
+server:
+  port: 8180
+
+spring:
+  datasource:
+    url: jdbc:postgresql://navitasrds.cby02zmi8jpc.us-east-1.rds.amazonaws.com:5432/rfaduser
+    username: navitasrds
+    password: navitasrds
+  profiles:
+    active: local
