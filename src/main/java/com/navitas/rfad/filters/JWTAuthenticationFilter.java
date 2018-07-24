@@ -85,6 +85,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             final String jwtToken = Jwts.builder().setSubject(email)
                     .setIssuer("navitas-rfad")
                     .setAudience("com.navitas.rfad")
+                    .claim("userId", user.getId().toString())
                     .claim("email", user.getEmail())
                     .claim("firstName", user.getFirstName())
                     .claim("lastName", user.getLastName())
@@ -101,6 +102,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             
             final Map<String, String> tokenMap = new HashMap<>();
             tokenMap.put("token", jwtToken);
+            tokenMap.put("userId", user.getId().toString());
             tokenMap.put("firstName", user.getFirstName());
             tokenMap.put("lastName", user.getLastName());
             tokenMap.put("email", user.getEmail());
