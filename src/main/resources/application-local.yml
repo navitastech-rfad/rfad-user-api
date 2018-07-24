@@ -1,5 +1,7 @@
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/rfaduser
-#  liquibase:
-#    drop-first: true
+#spring:
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/rfaduser
+    
+logging:
+  level:
+    com.navitas.rfad: DEBUG
