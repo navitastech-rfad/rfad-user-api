@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,7 +14,7 @@ import com.navitas.rfad.model.entity.PersonRoleId;
 import com.navitas.rfad.model.repository.PersonRepository;
 import com.navitas.rfad.model.repository.PersonRoleRepository;
 
-@Named
+// @Named
 public class CommandLineUtils implements CommandLineRunner {
 
     @Inject
