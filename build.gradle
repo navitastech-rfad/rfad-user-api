@@ -90,7 +90,7 @@ jacocoTestReport {
         csv.enabled false
     }
 
-    dependsOn jacocoTestCoverageVerification
+//    dependsOn jacocoTestCoverageVerification
 
     sourceDirectories = files(sourceSets.main.allSource.srcDirs)
     classDirectories = files(files(sourceSets.main.output).collect {
