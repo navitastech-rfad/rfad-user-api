@@ -29,7 +29,15 @@ buildscript {
             ]
         ]
     }
+
+  
+  	dependencies {
+		classpath "com.netflix.nebula:gradle-lint-plugin:latest.release"
+         
+	}
+    
 }
+	 
 
 plugins {
     id 'org.springframework.boot' version '2.0.3.RELEASE'
@@ -38,7 +46,13 @@ plugins {
     id 'eclipse'
     id 'jacoco'
     id 'java'
+    id 'checkstyle'
+    id 'pmd'    
+    id 'findbugs'
+    
 }
+
+apply plugin: 'nebula.lint'
 
 dependencyManagement {
     imports {
@@ -50,6 +64,19 @@ group = 'com.navitas'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
+
+gradleLint {
+  rules  = ['dependency-parentheses']
+  criticalRules = ['unused-dependency'] // <-- this will fail the build in the event of a violation
+}
+
+gradleLint.reportFormat = 'html'
+ 
+  springBoot {
+	 buildInfo()
+
+ }
+
 repositories {
     mavenLocal()
 	mavenCentral()
@@ -60,6 +87,26 @@ configurations {
 }
 
 dependencies {
+    compile 'javax.validation:validation-api:2.0.1.Final'
+    compile 'org.springframework:spring-context:5.0.7.RELEASE'
+    compile 'org.springframework.boot:spring-boot:2.0.3.RELEASE'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.6'
+    compile 'org.springframework.boot:spring-boot-autoconfigure:2.0.3.RELEASE'
+    compile 'org.apache.tomcat.embed:tomcat-embed-core:8.5.31'
+    compile 'org.springframework:spring-core:5.0.7.RELEASE'
+    compile 'org.springframework.data:spring-data-jpa:2.0.8.RELEASE'
+    compile 'org.springframework.security:spring-security-config:5.0.6.RELEASE'
+    compile 'org.springframework:spring-beans:5.0.7.RELEASE'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.9.0'
+    compile 'org.springframework.security:spring-security-web:5.0.6.RELEASE'
+    compile 'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.2.Final'
+    compile 'org.springframework.data:spring-data-commons:2.0.8.RELEASE'
+    compile 'org.springframework.security:spring-security-core:5.0.6.RELEASE'
+    compile 'org.springframework:spring-tx:5.0.7.RELEASE'
+    compile 'org.springframework:spring-web:5.0.7.RELEASE'
+    testCompile 'org.springframework:spring-test:5.0.7.RELEASE'
+    testCompile 'org.springframework.boot:spring-boot-test:2.0.3.RELEASE'
+    testCompile 'junit:junit:4.12'
     compile libs.spring.boot
     compile libs.db
     compile libs.misc
@@ -111,4 +158,73 @@ tasks.withType(Test) {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '4.9'
+}
+
+
+
+findbugs{
+    ignoreFailures=true
+    findbugsTest.enabled=false
+	toolVersion = "3.0.1"
+    sourceSets=[sourceSets.main]
+    reportsDir = file("$project.buildDir/reports/findbugs")
+    effort = "max"
+}
+
+ 
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled false
+        html.enabled true
+        html.stylesheet resources.text.fromFile('config/xsl/findbugs-custom.xsl')
+    }
+}
+
+
+ pmd {
+   ignoreFailures = true
+    pmdTest.enabled=false
+	sourceSets=[sourceSets.main]
+    reportsDir = file("$project.buildDir/reports/pmd")
+}
+
+pmdMain {
+    source ='src/main/java'
+}
+
+pmdTest {
+    source ='src/test/java'
+}
+
+
+tasks.withType(Pmd){
+     reports {
+        xml.enabled false
+        html.enabled true
+        
+    }
+}
+
+checkstyle {
+    toolVersion '7.8.1'
+    configFile file("config/checkstyle/checkstyle.xml")
+    ignoreFailures = true
+    reportsDir = file("$project.buildDir/reports/checkstyle")
+}
+
+checkstyleMain {
+    source ='src/main/java'
+}
+checkstyleTest {
+    source ='src/test/java'
+}
+
+
+
+tasks.withType(Checkstyle){
+    reports {
+        xml.enabled false
+        html.enabled true
+        html.stylesheet resources.text.fromFile('config/xsl/checkstyle-custom.xsl')
+    }
 }
