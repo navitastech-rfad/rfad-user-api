@@ -164,7 +164,10 @@ pipeline {
                 branch 'master'
             }
             steps {
-                sh 'docker build  -t userapi .'
+                sh 'docker build . -t 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER}'
+                sh 'docker tag 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:latest'
+                sh 'docker push 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER}'
+                sh 'docker push 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:latest'
             }
         }
 
