@@ -226,7 +226,15 @@ pipeline {
     post { 
         always { 
             echo 'Always'
-            
+           
+            publishHTML (target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'build/reports/checkstyle',
+                    reportFiles: '*.html',
+                    reportName: "CheckStyle Report"
+                    ])
         }
 
         failure { 
