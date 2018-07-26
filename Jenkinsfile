@@ -275,6 +275,7 @@ pipeline {
 
         failure { 
             echo 'Failed'
+            
         }
 
         success { 
