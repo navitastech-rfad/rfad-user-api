@@ -166,6 +166,7 @@ pipeline {
             steps {
                 sh 'docker build . -t 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER}'
                 sh 'docker tag 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:latest'
+                sh '/home/jenkins/ecr-login.sh'
                 sh 'docker push 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER}'
                 sh 'docker push 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:latest'
             }
