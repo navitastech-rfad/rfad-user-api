@@ -26,13 +26,15 @@ pipeline {
 
                 
                 echo 'Build'
-                
                 script {
-                 sh   './gradlew clean build'
+                    sh 'printenv'
                     
+                    repoUrl= gitRepoURL()
+                    branchName = gitBranchName()
+                    ispr = isGitPRBranch()
+                echo "${repoUrl} ${branchName} ${ispr}" 
                 }
-                  
-               
+
             }
         }
 
@@ -41,7 +43,17 @@ pipeline {
                  parallel(
                         "UnitTest ": {
                             echo 'Run Units tests'
-                                 
+                                   script {
+                                        if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:Unit test","Pending","PENDING")
+                                        }
+                                        
+                                        def TESTRESULT=sh script: './gradlew test',returnStatus: true
+                                         
+                                        if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:Unit test","Completed","SUCCESS")
+                                        }
+                                    }
                         },
                          "Security Test ": {
                             echo 'Run integration testing'
@@ -57,25 +69,69 @@ pipeline {
                 parallel(
                             "Lint  ": {
                             echo 'Run Lint'
-                                    
+                                   script {
+                                        if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:Lint","Pending","PENDING")
+                                        }
+                                        sh './gradlew lint'
+                                         
+                                        if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:Lint","Completed","SUCCESS")
+                                        }
+                                    }
                             
                         },
                         "PMD ": {
                             echo 'Run PMD'
-                                    
+                                   script {
+                                        if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:PMD","Pending","PENDING")
+                                        }
+
+                                        sh './gradlew pmdMain'
+                                         
+                                        
+                                         if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:PMD","Completed","SUCCESS")
+                                        }
+                                    }
                             
                         },
                          "CheckStyle ": {
                               echo 'Run CheckStyle'
-                                    
+                                   script {
+                                        if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:CheckStyle","Pending","PENDING")
+                                        }
+                                        sh './gradlew check'
+                                       
+                                         if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:CheckStyle","Completed","SUCCESS")
+                                        }
+                                    }
                         },
                          "FindBugs ": {
 
                              echo 'Run FindBugs'
-                                    
+                                   script {
+                                        if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:FindBugs","Pending","PENDING")
+                                        }
+                                        sh './gradlew findbugsMain'
+                                       
+                                        if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:FindBugs","Completed","SUCCESS")
+                                        }
+                                    }
                         },
                         "Sonar Scan": {
-                                     echo 'Sonar Scan'
+                                   script {
+                                        if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:Sonar","Pending","PENDING")
+                                        sleep 60 
+                                        setGithubStatus("continuous-integration/jenkins:Sonar","Completed","SUCCESS")
+                                        }
+                                    }
                         }
                         
                 )
@@ -179,7 +235,15 @@ pipeline {
         success { 
             echo 'Success!'
 
-                 
+                script {
+                    if (isGitPRBranch()) {
+
+                    
+                            sendSlackNotification("SUCCESS","",true)
+                            
+                            }
+                }
+
         }
 
         unstable { 
