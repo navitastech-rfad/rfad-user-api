@@ -26,8 +26,9 @@ pipeline {
 
                 
                 echo 'Build'
+                
                 script {
-                    sh 'printenv'
+                    ./gradlew clean build
                   
                 }
 
