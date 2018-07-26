@@ -141,7 +141,7 @@ pipeline {
 
         stage('Build Docker') {
             when {
-                branch 'develop'
+                branch 'master'
             }
             steps {
                 echo 'Build Docker Image'
@@ -151,7 +151,7 @@ pipeline {
         stage('Dev Deploy') {
 
                 when {
-                branch 'develop'
+                branch 'master'
             }
 
             steps {
@@ -163,7 +163,7 @@ pipeline {
 
         stage('DEV Test') {
             when {
-                branch 'develop'
+                branch 'master'
             }
             steps {
                          
@@ -181,7 +181,7 @@ pipeline {
 
          stage('QA deploy') {
              when {
-                branch 'develop'
+                branch 'master'
             }
            
             steps {
@@ -193,7 +193,7 @@ pipeline {
 
         stage('QA Functional Tests') {
             when {
-                branch 'develop'
+                branch 'master'
             }
             steps {
                 echo 'Unit Test'
@@ -203,7 +203,7 @@ pipeline {
 
          stage('Performance TEST') {
             when {
-                branch 'develop'
+                branch 'master'
             }
             steps {
                 echo 'Deploy QA'
@@ -234,6 +234,22 @@ pipeline {
                     reportDir: 'build/reports/checkstyle',
                     reportFiles: '*.html',
                     reportName: "CheckStyle Report"
+                    ])
+               publishHTML (target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'build/reports/findbugs',
+                    reportFiles: '*.html',
+                    reportName: "Findbugs Report"
+                    ])
+                   publishHTML (target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'build/reports/pmd',
+                    reportFiles: '*.html',
+                    reportName: "PMD Report"
                     ])
         }
 
