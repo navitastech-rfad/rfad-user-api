@@ -64,13 +64,11 @@ pipeline {
             }
         }         
 
-        stage('Static Code Analysis') {
+        stage('Lint') {
+ 
             steps {
                
-                parallel(
-                            "Lint  ": {
-                            echo 'Run Lint'
-                                   script {
+               script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:Lint","Pending","PENDING")
                                         }
@@ -80,11 +78,16 @@ pipeline {
                                         setGithubStatus("continuous-integration/jenkins:Lint","Completed","SUCCESS")
                                         }
                                     }
-                            
-                        },
-                        "PMD ": {
-                            echo 'Run PMD'
-                                   script {
+
+            }
+        
+        }
+
+            stage('PMD') {
+ 
+            steps {
+               
+              script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:PMD","Pending","PENDING")
                                         }
@@ -96,11 +99,16 @@ pipeline {
                                         setGithubStatus("continuous-integration/jenkins:PMD","Completed","SUCCESS")
                                         }
                                     }
-                            
-                        },
-                         "CheckStyle ": {
-                              echo 'Run CheckStyle'
-                                   script {
+                                    
+            }
+        
+        }
+
+        stage('CheckStyle') {
+ 
+            steps {
+               
+                script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:CheckStyle","Pending","PENDING")
                                         }
@@ -110,11 +118,16 @@ pipeline {
                                         setGithubStatus("continuous-integration/jenkins:CheckStyle","Completed","SUCCESS")
                                         }
                                     }
-                        },
-                         "FindBugs ": {
+                                    
+            }
+        
+        }
 
-                             echo 'Run FindBugs'
-                                   script {
+                stage('FindBugs') {
+ 
+            steps {
+               
+           script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:FindBugs","Pending","PENDING")
                                         }
@@ -124,21 +137,28 @@ pipeline {
                                         setGithubStatus("continuous-integration/jenkins:FindBugs","Completed","SUCCESS")
                                         }
                                     }
-                        },
-                        "Sonar Scan": {
-                                   script {
+                                    
+            }
+        
+        }
+
+
+        stage('Coverage') {
+ 
+            steps {
+               
+        script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:Sonar","Pending","PENDING")
                                         sleep 60 
                                         setGithubStatus("continuous-integration/jenkins:Sonar","Completed","SUCCESS")
                                         }
                                     }
-                        }
-                        
-                )
+                                    
             }
+        
         }
-
+       
         stage('Build Docker') {
             when {
                 branch 'master'
