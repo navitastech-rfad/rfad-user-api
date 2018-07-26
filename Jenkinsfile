@@ -27,11 +27,10 @@ pipeline {
                 
                 echo 'Build'
                 
-                script {
+                
                     ./gradlew clean build
                   
-                }
-
+               
             }
         }
 
