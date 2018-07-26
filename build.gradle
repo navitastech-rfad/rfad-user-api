@@ -29,7 +29,11 @@ buildscript {
             ]
         ]
     }
+
+  
+    
 }
+	 
 
 plugins {
     id 'org.springframework.boot' version '2.0.3.RELEASE'
@@ -38,7 +42,12 @@ plugins {
     id 'eclipse'
     id 'jacoco'
     id 'java'
+    id 'checkstyle'
+    id 'pmd'    
+    id 'findbugs'
+    
 }
+
 
 dependencyManagement {
     imports {
@@ -111,4 +120,73 @@ tasks.withType(Test) {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '4.9'
+}
+
+
+
+findbugs{
+    ignoreFailures=true
+    findbugsTest.enabled=false
+	toolVersion = "3.0.1"
+    sourceSets=[sourceSets.main]
+    reportsDir = file("$project.buildDir/reports/findbugs")
+    effort = "max"
+}
+
+ 
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled false
+        html.enabled true
+        html.stylesheet resources.text.fromFile('config/xsl/findbugs-custom.xsl')
+    }
+}
+
+
+ pmd {
+   ignoreFailures = true
+    pmdTest.enabled=false
+	sourceSets=[sourceSets.main]
+    reportsDir = file("$project.buildDir/reports/pmd")
+}
+
+pmdMain {
+    source ='src/main/java'
+}
+
+pmdTest {
+    source ='src/test/java'
+}
+
+
+tasks.withType(Pmd){
+     reports {
+        xml.enabled false
+        html.enabled true
+        
+    }
+}
+
+checkstyle {
+    toolVersion '7.8.1'
+    configFile file("config/checkstyle/checkstyle.xml")
+    ignoreFailures = true
+    reportsDir = file("$project.buildDir/reports/checkstyle")
+}
+
+checkstyleMain {
+    source ='src/main/java'
+}
+checkstyleTest {
+    source ='src/test/java'
+}
+
+
+
+tasks.withType(Checkstyle){
+    reports {
+        xml.enabled false
+        html.enabled true
+        html.stylesheet resources.text.fromFile('config/xsl/checkstyle-custom.xsl')
+    }
 }

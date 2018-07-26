@@ -27,12 +27,13 @@ pipeline {
                 
                 echo 'Build'
                 script {
-                    sh 'printenv'
+                    
                     
                     repoUrl= gitRepoURL()
                     branchName = gitBranchName()
                     ispr = isGitPRBranch()
-                echo "${repoUrl} ${branchName} ${ispr}" 
+                      echo "${repoUrl} ${branchName} ${ispr}" 
+                      sh './gradlew clean build'
                 }
 
             }
