@@ -144,7 +144,7 @@ pipeline {
                 branch 'master'
             }
             steps {
-                echo 'Build Docker Image'
+                sh 'docker build  -t userapi .'
             }
         }
 
