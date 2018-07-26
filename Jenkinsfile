@@ -166,7 +166,7 @@ pipeline {
             steps {
                 sh 'docker build . -t 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER}'
                 sh 'docker tag 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:latest'
-                sh '/home/jenkins/ecr-login.sh'
+                sh '/home/jenkins/ecr-login.sh | /bin/bash '
                 sh 'docker push 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER}'
                 sh 'docker push 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:latest'
             }
@@ -179,8 +179,9 @@ pipeline {
             }
 
             steps {
-                echo 'Deploy DEV'
-                echo 'Sanity Checks'
+
+               sh 'ecs-deploy  -c DevCluster1 -n userapi -i 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} -r us-east-1 -t 180'
+
             }
         
         }
