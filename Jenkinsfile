@@ -150,7 +150,9 @@ pipeline {
         script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:Sonar","Pending","PENDING")
-                                        sleep 60 
+                                        
+                                         sh './gradlew sonarqube -Dsonar.host.url=http://sonar.steadystatecd.com -Dsonar.login=7422e5e43468c0cd3d9f5f81e3ab8677b553de48'
+                                            
                                         setGithubStatus("continuous-integration/jenkins:Sonar","Completed","SUCCESS")
                                         }
                                     }
