@@ -182,7 +182,7 @@ pipeline {
 
             steps {
 
-               sh 'ecs-deploy  -c DevCluster1 -n userapi -i 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} -r us-east-1 -t 180'
+              sh 'echo test'
 
             }
         
