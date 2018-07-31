@@ -1,5 +1,13 @@
 package com.navitas.rfad.filters;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.navitas.rfad.bean.Credentials;
+import com.navitas.rfad.model.entity.Person;
+import com.navitas.rfad.model.repository.PersonRepository;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -28,116 +36,120 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.navitas.rfad.bean.Credentials;
-import com.navitas.rfad.model.entity.Person;
-import com.navitas.rfad.model.repository.PersonRepository;
+public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+  private static final Random RANDOM = new SecureRandom();
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+  protected static final long EXPIRATION_TIME = 864_000_000; // 10 days
+  protected static final String TOKEN_PREFIX = "Bearer ";
+  protected static final String HEADER_STRING = "Authorization";
+  protected static final String HEADER_COOKIE = "Set-Cookie";
+  protected static final String FINGERPRINT = "__Secure-Fgp";
+  protected static final String FINGERPRINT_HASH = "userFingerprint";
+  protected static final String ALGORITHM = "SHA-256";
 
-public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-    private static final Random RANDOM = new SecureRandom();
+  private AuthenticationManager authenticationManager;
+  private PersonRepository personRepository;
+  private ObjectMapper objectMapper;
 
-    protected static final long EXPIRATION_TIME = 864_000_000; // 10 days
-    protected static final String TOKEN_PREFIX = "Bearer ";
-    protected static final String HEADER_STRING = "Authorization";
-    protected static final String HEADER_COOKIE = "Set-Cookie";
-    protected static final String FINGERPRINT = "__Secure-Fgp";
-    protected static final String FINGERPRINT_HASH = "userFingerprint";
-    protected static final String ALGORITHM = "SHA-256";
+  @Value("${security.jwt.client-secret}")
+  private String signingKey = "SecretKeyToGenJWTs";
 
-    private AuthenticationManager authenticationManager;
-    private PersonRepository personRepository;
-    private ObjectMapper mapper;
+  /**
+   * JwtAuthenticationFilter constructor.
+   *
+   * @param authenticationManager used to perform authentication of credentials
+   * @param personRepository repository interface to query person data
+   * @param objectMapper json object mapper
+   */
+  public JwtAuthenticationFilter(
+      AuthenticationManager authenticationManager,
+      PersonRepository personRepository,
+      ObjectMapper objectMapper) {
+    this.authenticationManager = authenticationManager;
+    this.personRepository = personRepository;
+    this.objectMapper = objectMapper;
+  }
 
-    @Value("${security.jwt.client-secret}")
-    private String signingKey = "SecretKeyToGenJWTs";
-
-    public JWTAuthenticationFilter(AuthenticationManager authenticationManager, PersonRepository personRepository,
-            ObjectMapper mapper) {
-        this.authenticationManager = authenticationManager;
-        this.personRepository = personRepository;
-        this.mapper = mapper;
+  @Override
+  public Authentication attemptAuthentication(
+      HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    try {
+      final Credentials creds =
+          new ObjectMapper().readValue(request.getReader(), Credentials.class);
+      return authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(
+              creds.getUsername(), creds.getPassword(), new ArrayList<>()));
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
-            throws AuthenticationException {
-        try {
-            final Credentials creds = new ObjectMapper().readValue(request.getReader(), Credentials.class);
-            return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(creds.getUsername(),
-                    creds.getPassword(), new ArrayList<>()));
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+  @Override
+  @Transactional(readOnly = true)
+  protected void successfulAuthentication(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      FilterChain chain,
+      Authentication authResult)
+      throws IOException, ServletException {
+    try {
+      final String fingerprint = createFingerprint();
+      final String fingerprintHash = createFingerprintHash(fingerprint);
+      final String email = ((User) authResult.getPrincipal()).getUsername();
+      final Person user = personRepository.findByEmail(email);
+      final String jwtToken =
+          Jwts.builder()
+              .setSubject(email)
+              .setIssuer("navitas-rfad")
+              .setAudience("com.navitas.rfad")
+              .claim("userId", user.getId().toString())
+              .claim("email", user.getEmail())
+              .claim("firstName", user.getFirstName())
+              .claim("lastName", user.getLastName())
+              .claim("role", user.getPersonRoles().iterator().next().getRole().getCode())
+              .claim(FINGERPRINT_HASH, fingerprintHash)
+              .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+              .signWith(SignatureAlgorithm.HS512, signingKey.getBytes())
+              .compact();
 
-    @Override
-    @Transactional(readOnly = true)
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-            Authentication authResult) throws IOException, ServletException {
-        try {
-            final String fingerprint = createFingerprint();
-            final String fingerprintHash = createFingerprintHash(fingerprint);
-            final String email = ((User) authResult.getPrincipal()).getUsername();
-            final Person user = personRepository.findByEmail(email);
-            final String jwtToken = Jwts.builder().setSubject(email)
-                    .setIssuer("navitas-rfad")
-                    .setAudience("com.navitas.rfad")
-                    .claim("userId", user.getId().toString())
-                    .claim("email", user.getEmail())
-                    .claim("firstName", user.getFirstName())
-                    .claim("lastName", user.getLastName())
-                    .claim("role", user.getPersonRoles().iterator().next().getRole().getCode())
-                    .claim(FINGERPRINT_HASH, fingerprintHash)
-                    .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                    .signWith(SignatureAlgorithm.HS512, signingKey.getBytes())
-                    .compact();
-            
-            response.setStatus(HttpStatus.OK.value());
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.addHeader(HEADER_STRING, TOKEN_PREFIX + jwtToken);
-            response.setHeader(HEADER_COOKIE, createCookieString(fingerprint));
-            
-            final Map<String, String> tokenMap = new HashMap<>();
-            tokenMap.put("token", jwtToken);
-            tokenMap.put("userId", user.getId().toString());
-            tokenMap.put("firstName", user.getFirstName());
-            tokenMap.put("lastName", user.getLastName());
-            tokenMap.put("email", user.getEmail());
-            tokenMap.put("role", user.getPersonRoles().iterator().next().getRole().getCode());
-            
-            mapper.writeValue(response.getWriter(), tokenMap);
-//            response.getWriter()
-//                    .write("{ " + "\"token\" : \"" + token + "\"," + "\"firstName\" : \"" + parsedUser.getFirstName()
-//                            + "\"," + "\"lastName\" : \"" + parsedUser.getLastName() + "\"," + "\"email\" : \""
-//                            + parsedUser.getEmail() + "\"," + "\"role\" : \"" + parsedUser.getRole().getCode()
-//                            + "\" }");
-        } catch (final NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
+      response.setStatus(HttpStatus.OK.value());
+      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+      response.addHeader(HEADER_STRING, TOKEN_PREFIX + jwtToken);
+      response.setHeader(HEADER_COOKIE, createCookieString(fingerprint));
 
-    private String createCookieString(String fingerprint) {
-        final StringBuilder builder = new StringBuilder();
-        builder.append(FINGERPRINT).append("=").append(fingerprint).append("; ");
-        builder.append("SameSite=strict; ");
-        builder.append("HttpOnly; ");
-        builder.append("Secure");
-        return builder.toString();
-    }
+      final Map<String, String> tokenMap = new HashMap<>();
+      tokenMap.put("token", jwtToken);
+      tokenMap.put("userId", user.getId().toString());
+      tokenMap.put("firstName", user.getFirstName());
+      tokenMap.put("lastName", user.getLastName());
+      tokenMap.put("email", user.getEmail());
+      tokenMap.put("role", user.getPersonRoles().iterator().next().getRole().getCode());
 
-    private String createFingerprint() {
-        final byte[] randomFgp = new byte[50];
-        RANDOM.nextBytes(randomFgp);
-        return DatatypeConverter.printHexBinary(randomFgp);
+      objectMapper.writeValue(response.getWriter(), tokenMap);
+    } catch (final NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    protected static String createFingerprintHash(String fingerprint)
-            throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        final MessageDigest digest = MessageDigest.getInstance(ALGORITHM);
-        final byte[] userFingerprintDigest = digest.digest(fingerprint.getBytes("utf-8"));
-        return DatatypeConverter.printHexBinary(userFingerprintDigest);
-    }
+  private String createCookieString(String fingerprint) {
+    final StringBuilder builder = new StringBuilder();
+    builder.append(FINGERPRINT).append("=").append(fingerprint).append("; ");
+    builder.append("SameSite=strict; ");
+    builder.append("HttpOnly; ");
+    builder.append("Secure");
+    return builder.toString();
+  }
+
+  private String createFingerprint() {
+    final byte[] randomFgp = new byte[50];
+    RANDOM.nextBytes(randomFgp);
+    return DatatypeConverter.printHexBinary(randomFgp);
+  }
+
+  protected static String createFingerprintHash(String fingerprint)
+      throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    final MessageDigest digest = MessageDigest.getInstance(ALGORITHM);
+    final byte[] userFingerprintDigest = digest.digest(fingerprint.getBytes("utf-8"));
+    return DatatypeConverter.printHexBinary(userFingerprintDigest);
+  }
 }
