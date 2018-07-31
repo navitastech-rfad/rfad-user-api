@@ -49,6 +49,7 @@ plugins {
     id 'checkstyle'
     id 'pmd'    
     id 'findbugs'
+    id 'org.owasp.dependencycheck' version '3.3.0'
     
 }
 
