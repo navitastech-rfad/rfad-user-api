@@ -17,7 +17,7 @@ public class UserController extends BaseController {
    *
    * @param email user's email
    */
-  @GetMapping(value = "/{email}")
+  @GetMapping(value = "/profile/{email}")
   public ResponseEntity<User> getUser(@PathVariable final String email) {
     if (email == null) {
       return ResponseEntity.notFound().build();

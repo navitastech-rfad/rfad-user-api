@@ -3,20 +3,26 @@ buildscript {
         libs = [
             spring: [
                 boot: [
+					'org.springframework.boot:spring-boot',
+					'org.springframework.boot:spring-boot-autoconfigure',
+//					'org.springframework.boot:spring-boot-starter-web',
+					'org.springframework.boot:spring-boot-starter-data-jpa'
                 ],
                 framework: [                    
-                    'org.springframework:spring-context',
-                    'org.springframework.boot:spring-boot',                    
-                    'org.springframework.boot:spring-boot-autoconfigure',                    
+                    'org.springframework:spring-context',                    
                     'org.springframework:spring-core',
-                    'org.springframework.data:spring-data-jpa',
-                    'org.springframework.security:spring-security-config',
-                    'org.springframework:spring-beans',                    
-                    'org.springframework.security:spring-security-web',                    
+					'org.springframework:spring-jdbc',
+					'org.springframework:spring-orm',
+					'org.springframework:spring-tx',
+					'org.springframework:spring-web',
+					'org.springframework:spring-webmvc',
+					'org.springframework:spring-aspects',
+                    'org.springframework:spring-beans',
+					'org.springframework.security:spring-security-core',
+                    'org.springframework.security:spring-security-web', 
+					'org.springframework.security:spring-security-config',
                     'org.springframework.data:spring-data-commons',
-                    'org.springframework.security:spring-security-core',
-                    'org.springframework:spring-tx',
-                    'org.springframework:spring-web'
+					'org.springframework.data:spring-data-jpa',					
                 ]
             ],
 
@@ -28,18 +34,32 @@ buildscript {
             
             test: [
                 'org.springframework.boot:spring-boot-starter-test'
-            ],            
+            ],
+			
+			logging: [
+				'org.slf4j:slf4j-api',
+				'org.slf4j:jcl-over-slf4j',
+				'org.slf4j:jul-to-slf4j',
+				'org.apache.logging.log4j:log4j-slf4j-impl',
+				'org.apache.logging.log4j:log4j-core',
+				'org.apache.logging.log4j:log4j-jul'
+			],
+			
+			tomcat: [
+				'org.apache.tomcat.embed:tomcat-embed-core',
+				'org.apache.tomcat.embed:tomcat-embed-el',
+				'org.apache.tomcat.embed:tomcat-embed-websocket',
+			],
 
             misc: [
                 'io.jsonwebtoken:jjwt:0.9.1',
                 'javax.inject:javax.inject:1',
                 'javax.validation:validation-api',
+				'org.hibernate.validator:hibernate-validator',
                 'commons-io:commons-io:2.5',
                 'commons-collections:commons-collections:3.2.2',
-                'org.slf4j:slf4j-api',
                 'com.fasterxml.jackson.core:jackson-databind',
-                'com.fasterxml.jackson.core:jackson-annotations',
-                'org.apache.tomcat.embed:tomcat-embed-core',
+                'com.fasterxml.jackson.core:jackson-annotations'
             ]
         ]
     }
@@ -96,7 +116,10 @@ dependencies {
     compile libs.spring.boot
     compile libs.spring.framework
     compile libs.db
+	compile libs.logging	
     compile libs.misc
+	
+	compile libs.tomcat
     
     testCompile libs.test
 }
