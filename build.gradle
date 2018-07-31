@@ -57,6 +57,7 @@ plugins {
     id 'pmd'    
     id 'findbugs'
     id "nebula.lint" version "9.3.4"
+    id 'org.owasp.dependencycheck' version '3.3.0'
     
 }
 
