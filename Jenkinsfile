@@ -184,7 +184,7 @@ pipeline {
 
             steps {
 
-              sh 'ecs-deploy --verbose -c DevAppCluster -n userapi -i 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} -r us-east-1'
+              sh 'aws_cmd_result =`ecs-deploy --verbose -c DevAppCluster -n userapi -i 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} -r us-east-1 --timeout 180` '
 
             }
         
