@@ -1,5 +1,10 @@
 package com.navitas.rfad.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.navitas.rfad.filters.JwtAuthenticationFilter;
+import com.navitas.rfad.filters.JwtAuthorizationFilter;
+import com.navitas.rfad.model.repository.PersonRepository;
+
 import javax.inject.Inject;
 
 import org.springframework.context.annotation.Bean;
@@ -15,51 +20,43 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.navitas.rfad.filters.JWTAuthenticationFilter;
-import com.navitas.rfad.filters.JWTAuthorizationFilter;
-import com.navitas.rfad.model.repository.PersonRepository;
-
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    @Inject
-    private UserDetailsService userDetailsService;
+  @Inject private UserDetailsService userDetailsService;
 
-    @Inject
-    private PersonRepository personRepository;
+  @Inject private PersonRepository personRepository;
 
-    @Inject
-    private ObjectMapper mapper;
+  @Inject private ObjectMapper mapper;
 
-    @Bean
-    protected PasswordEncoder passwordEncoder() {
-        return new Pbkdf2PasswordEncoder();
-    }
+  @Bean
+  protected PasswordEncoder passwordEncoder() {
+    return new Pbkdf2PasswordEncoder();
+  }
 
-    @Override
-    public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-    }
+  @Override
+  public void configure(AuthenticationManagerBuilder auth) throws Exception {
+    auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+  }
+  
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+    http.cors()
+      .and()
+        .csrf().disable()
+        .authorizeRequests().antMatchers("/api/user/register", "/api/users/profile/**").permitAll()
+      .and()
+        .authorizeRequests().anyRequest().authenticated()
+      .and()
+        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+      .and()
+        .addFilter(new JwtAuthenticationFilter(authenticationManager(), personRepository, mapper))
+        .addFilter(new JwtAuthorizationFilter(authenticationManager(), personRepository));
+  }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.cors()
-            .and()
-                .csrf().disable()
-                .authorizeRequests().antMatchers("/api/user/register").permitAll()
-            .and()
-                .authorizeRequests().anyRequest().authenticated()
-            .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-                .addFilter(new JWTAuthenticationFilter(authenticationManager(), personRepository, mapper))
-                .addFilter(new JWTAuthorizationFilter(authenticationManager(), personRepository));
-    }
-    
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-      final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-      source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
-      return source;
-    }
+  @Bean
+  CorsConfigurationSource corsConfigurationSource() {
+    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+    return source;
+  }
 }

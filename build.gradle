@@ -3,44 +3,71 @@ buildscript {
         libs = [
             spring: [
                 boot: [
-                    'org.springframework.boot:spring-boot-starter-web',
-                    'org.springframework.boot:spring-boot-starter-data-jpa',
-                    'org.springframework.boot:spring-boot-starter-jdbc',
-                    'org.springframework.boot:spring-boot-starter-log4j2',
-                    'org.springframework.boot:spring-boot-starter-security'
+					'org.springframework.boot:spring-boot',
+					'org.springframework.boot:spring-boot-autoconfigure',
+//					'org.springframework.boot:spring-boot-starter-web',
+					'org.springframework.boot:spring-boot-starter-data-jpa'
+                ],
+                framework: [                    
+                    'org.springframework:spring-context',                    
+                    'org.springframework:spring-core',
+					'org.springframework:spring-jdbc',
+					'org.springframework:spring-orm',
+					'org.springframework:spring-tx',
+					'org.springframework:spring-web',
+					'org.springframework:spring-webmvc',
+					'org.springframework:spring-aspects',
+                    'org.springframework:spring-beans',
+					'org.springframework.security:spring-security-core',
+                    'org.springframework.security:spring-security-web', 
+					'org.springframework.security:spring-security-config',
+                    'org.springframework.data:spring-data-commons',
+					'org.springframework.data:spring-data-jpa',					
                 ]
             ],
 
             db: [
                 'org.postgresql:postgresql',
-                'org.liquibase:liquibase-core'
+                'org.liquibase:liquibase-core',
+                'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.2.Final'
             ],
             
             test: [
                 'org.springframework.boot:spring-boot-starter-test'
-            ],            
+            ],
+			
+			logging: [
+				'org.slf4j:slf4j-api',
+				'org.slf4j:jcl-over-slf4j',
+				'org.slf4j:jul-to-slf4j',
+				'org.apache.logging.log4j:log4j-slf4j-impl',
+				'org.apache.logging.log4j:log4j-core',
+				'org.apache.logging.log4j:log4j-jul'
+			],
+			
+			tomcat: [
+				'org.apache.tomcat.embed:tomcat-embed-core',
+				'org.apache.tomcat.embed:tomcat-embed-el',
+				'org.apache.tomcat.embed:tomcat-embed-websocket',
+			],
 
             misc: [
                 'io.jsonwebtoken:jjwt:0.9.1',
                 'javax.inject:javax.inject:1',
+                'javax.validation:validation-api',
+				'org.hibernate.validator:hibernate-validator',
                 'commons-io:commons-io:2.5',
                 'commons-collections:commons-collections:3.2.2',
-                'org.slf4j:slf4j-api'               
+                'com.fasterxml.jackson.core:jackson-databind',
+                'com.fasterxml.jackson.core:jackson-annotations'
             ]
         ]
     }
-
-  
-  	dependencies {
-		classpath "com.netflix.nebula:gradle-lint-plugin:latest.release"
-         
-	}
-    
 }
 	 
 
 plugins {
-    id 'org.springframework.boot' version '2.0.3.RELEASE'
+    id 'org.springframework.boot' version '2.0.4.RELEASE'
     id 'org.sonarqube' version '2.6.2'
     id 'io.spring.dependency-management'  version '1.0.6.RELEASE'
     id 'eclipse'
@@ -49,11 +76,10 @@ plugins {
     id 'checkstyle'
     id 'pmd'    
     id 'findbugs'
+    id "nebula.lint" version "9.3.4"
     id 'org.owasp.dependencycheck' version '3.3.0'
     
 }
-
-apply plugin: 'nebula.lint'
 
 dependencyManagement {
     imports {
@@ -73,10 +99,9 @@ gradleLint {
 
 gradleLint.reportFormat = 'html'
  
-  springBoot {
-	 buildInfo()
-
- }
+springBoot {
+    buildInfo()
+}
 
 repositories {
     mavenLocal()
@@ -88,29 +113,13 @@ configurations {
 }
 
 dependencies {
-    compile 'javax.validation:validation-api:2.0.1.Final'
-    compile 'org.springframework:spring-context:5.0.7.RELEASE'
-    compile 'org.springframework.boot:spring-boot:2.0.3.RELEASE'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.6'
-    compile 'org.springframework.boot:spring-boot-autoconfigure:2.0.3.RELEASE'
-    compile 'org.apache.tomcat.embed:tomcat-embed-core:8.5.31'
-    compile 'org.springframework:spring-core:5.0.7.RELEASE'
-    compile 'org.springframework.data:spring-data-jpa:2.0.8.RELEASE'
-    compile 'org.springframework.security:spring-security-config:5.0.6.RELEASE'
-    compile 'org.springframework:spring-beans:5.0.7.RELEASE'
-    compile 'com.fasterxml.jackson.core:jackson-annotations:2.9.0'
-    compile 'org.springframework.security:spring-security-web:5.0.6.RELEASE'
-    compile 'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.2.Final'
-    compile 'org.springframework.data:spring-data-commons:2.0.8.RELEASE'
-    compile 'org.springframework.security:spring-security-core:5.0.6.RELEASE'
-    compile 'org.springframework:spring-tx:5.0.7.RELEASE'
-    compile 'org.springframework:spring-web:5.0.7.RELEASE'
-    testCompile 'org.springframework:spring-test:5.0.7.RELEASE'
-    testCompile 'org.springframework.boot:spring-boot-test:2.0.3.RELEASE'
-    testCompile 'junit:junit:4.12'
     compile libs.spring.boot
+    compile libs.spring.framework
     compile libs.db
+	compile libs.logging	
     compile libs.misc
+	
+	compile libs.tomcat
     
     testCompile libs.test
 }
@@ -141,14 +150,6 @@ jacocoTestReport {
     })
 }
 
-//test {
-//    jacoco {
-//        append = false
-//        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
-//        classDumpDir = file("$buildDir/jacoco/classpathdumps")
-//    }
-//}
-
 tasks.withType(Test) {
     finalizedBy jacocoTestReport
 
@@ -160,8 +161,6 @@ tasks.withType(Test) {
 task wrapper(type: Wrapper) {
     gradleVersion = '4.9'
 }
-
-
 
 findbugs{
     ignoreFailures=true
@@ -182,8 +181,8 @@ tasks.withType(FindBugs) {
 }
 
 
- pmd {
-   ignoreFailures = true
+pmd {
+    ignoreFailures = true
     pmdTest.enabled=false
 	sourceSets=[sourceSets.main]
     reportsDir = file("$project.buildDir/reports/pmd")
@@ -219,8 +218,6 @@ checkstyleMain {
 checkstyleTest {
     source ='src/test/java'
 }
-
-
 
 tasks.withType(Checkstyle){
     reports {
