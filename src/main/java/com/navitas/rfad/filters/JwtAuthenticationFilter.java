@@ -102,6 +102,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
               .setSubject(email)
               .setIssuer("navitas-rfad")
               .setAudience("com.navitas.rfad")
+              .setHeaderParam("typ", "JWT")
               .claim("userId", user.getId().toString())
               .claim("email", user.getEmail())
               .claim("firstName", user.getFirstName())

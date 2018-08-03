@@ -5,3 +5,10 @@
 logging:
   level:
     com.navitas.rfad: DEBUG
+
+security:
+  jwt:
+    key-value: |
+      -----BEGIN PUBLIC KEY-----
+      MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoOZkkEsEEKMHLRBtbDMzqUPeMfoslAnlPf8/DAJFoIdi0QxFycriPT03D8E0cGPwOaa79YH/Tga6WUvEC8LlJDnQ877J1+xzjZ4On3cFEq7RIjreCj8LMyp7RhNpdaKwyHkQ3J0bRoZoh+y5v0fxFew6uRj5IKgxM1HiiocRt2iTRglWTdgE4IIPvYu6DeCk4cXCLKg1cTttHRSE1rbKM139DOl8Abq1yxUeEersNerfsufOqM03Vm1chQzeYibwDni/Qo9LwtcXVROczot73D1MI6NEM9i2TzML/1ThrIU+uODwGxUHUrIAgk+PFtUnIoYZnM6ypDTWRX3l/2FZIQIDAQAB
+      -----END PUBLIC KEY-----

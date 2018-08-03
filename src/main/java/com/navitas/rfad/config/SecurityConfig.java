@@ -7,6 +7,7 @@ import com.navitas.rfad.model.repository.PersonRepository;
 
 import javax.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -28,6 +29,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Inject private ObjectMapper mapper;
 
+  @Value("${security.jwt.key-value}")
+  private String verifierKey;
+
   @Bean
   protected PasswordEncoder passwordEncoder() {
     return new Pbkdf2PasswordEncoder();
@@ -41,16 +45,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http.cors()
-      .and()
-        .csrf().disable()
-        .authorizeRequests().antMatchers("/api/user/register", "/api/users/profile/**").permitAll()
-      .and()
-        .authorizeRequests().anyRequest().authenticated()
-      .and()
-        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-      .and()
+        .and()
+        .csrf()
+        .disable()
+        .authorizeRequests()
+        .antMatchers("/api/user/register", "/api/users/profile1/**", "/actuator/**")
+        .permitAll()
+        .and()
+        .authorizeRequests()
+        .anyRequest()
+        .authenticated()
+        .and()
+        .sessionManagement()
+        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .and()
         .addFilter(new JwtAuthenticationFilter(authenticationManager(), personRepository, mapper))
-        .addFilter(new JwtAuthorizationFilter(authenticationManager(), personRepository));
+        .addFilter(new JwtAuthorizationFilter(authenticationManager(), verifierKey));
   }
 
   @Bean

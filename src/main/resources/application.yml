@@ -15,7 +15,26 @@ spring:
     default-schema: ${db.schema}
     
   profiles:
-    active: local
-    
+    active:
+
+management:
+  endpoints:
+    enabled-by-default: false
+  endpoint:
+    health:
+      enabled: true      
+    info:
+      enabled: true
+      show-details: always
+
 db:
   schema: rfaduser
+
+security:
+  jwt:
+    key-value: |
+      -----BEGIN PUBLIC KEY-----
+      MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAp4EqwPp4n6TIls+WncEGHyrw1xZcwECFV/r4BsaBkt/z9WGTzRYaxqoKuAQUbBdfZKxWv+gVO1dP1wlfHpyYX2V0OHZvC7A3z5TtEycio4nqTge948l2v5kQ8VBF3xteiT6RZwpbfMYBlRlz+tXcvVjTV5fHEFWZNVRag8sebtgsLhUmSGQAjtYKV09xV/eeyTmUvOrIIcyKemYC+k1yDOCzelLm4+FgEJdoffwrP5HSUE0j1pRGAsj8scNATbz8QFv+589rlZTEmE8TrPfRhA8cE3uaoCeP3muk2flUBIVLfdMR/iPSAh+EMYDwt6iYAKD47v9veJwNMKy1uwhU/QIDAQAB
+      -----END PUBLIC KEY-----
+
+  
