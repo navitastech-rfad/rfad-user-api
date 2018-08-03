@@ -6,7 +6,8 @@ buildscript {
 					'org.springframework.boot:spring-boot',
 					'org.springframework.boot:spring-boot-autoconfigure',
 //					'org.springframework.boot:spring-boot-starter-web',
-					'org.springframework.boot:spring-boot-starter-data-jpa'
+					'org.springframework.boot:spring-boot-starter-data-jpa',
+					'org.springframework.boot:spring-boot-starter-actuator'
                 ],
                 framework: [                    
                     'org.springframework:spring-context',                    
@@ -22,7 +23,8 @@ buildscript {
                     'org.springframework.security:spring-security-web', 
 					'org.springframework.security:spring-security-config',
                     'org.springframework.data:spring-data-commons',
-					'org.springframework.data:spring-data-jpa',					
+					'org.springframework.data:spring-data-jpa',
+					'org.springframework.security:spring-security-jwt:1.0.9.RELEASE'
                 ]
             ],
 
@@ -52,6 +54,7 @@ buildscript {
 			],
 
             misc: [
+				'org.keycloak:keycloak-core:4.1.0.Final',
                 'io.jsonwebtoken:jjwt:0.9.1',
                 'javax.inject:javax.inject:1',
                 'javax.validation:validation-api',
