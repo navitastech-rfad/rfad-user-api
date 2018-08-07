@@ -3,7 +3,7 @@ FROM openjdk:8-jdk-alpine
 
 ENV PINPOINT_VERSION=1.7.3
 
-ENV COLLECTOR_IP=10.8.101.186
+ENV COLLECTOR_IP=10.11.101.94
 
 ADD files/configure-agent.sh /usr/local/bin/
 

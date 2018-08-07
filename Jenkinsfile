@@ -184,7 +184,7 @@ pipeline {
 
             steps {
 
-              sh 'ecs-deploy -c DevAppCluster -n userapi -i 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} -r us-east-1 --timeout 420 '
+              sh 'ecs-deploy -c dev-APICluster -n userapi -i 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} -r us-east-1 --timeout 420 '
 
             }
         
@@ -214,8 +214,8 @@ pipeline {
             }
            
             steps {
-                echo 'Deploy QA'
-                echo 'Sanity Checks'
+                    sh 'ecs-deploy -c qa-APICluster -n userapi -i 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} -r us-east-1 --timeout 420 '
+
             }
         
         }
