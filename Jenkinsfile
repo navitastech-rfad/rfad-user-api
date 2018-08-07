@@ -153,7 +153,7 @@ pipeline {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:Sonar","Pending","PENDING")
                                         
-                                         sh './gradlew sonarqube -Dsonar.host.url=http://sonar.steadystatecd.com -Dsonar.login=7422e5e43468c0cd3d9f5f81e3ab8677b553de48'
+                                         sh './gradlew sonarqube -Dsonar.host.url=http://sonar.steadystatecd.com -Dsonar.login=3363177bf3a2cac9faffb0cbe292e94beb717021'
                                             
                                         setGithubStatus("continuous-integration/jenkins:Sonar","Completed","SUCCESS")
                                         }

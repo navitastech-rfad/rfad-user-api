@@ -80,7 +80,7 @@ plugins {
     id 'pmd'    
     id 'findbugs'
     id "nebula.lint" version "9.3.4"
-    id 'org.owasp.dependencycheck' version '3.3.0'
+    id 'org.owasp.dependencycheck' version '3.3.1'
     
 }
 
@@ -102,6 +102,13 @@ gradleLint {
 
 gradleLint.reportFormat = 'html'
  
+ dependencyCheck {
+    autoUpdate=false
+    cveValidForHours=1
+    format='ALL'
+    failOnError=false
+}
+
 springBoot {
     buildInfo()
 }
