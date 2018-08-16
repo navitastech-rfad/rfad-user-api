@@ -128,16 +128,16 @@ pipeline {
 
 
         stage('Sonar') {
-             
-                steps {
+             withSonarQubeEnv('Sonar') {
+                  steps {
                       script {
-                                        if (isGitPRBranch()) {
-                                        setGithubStatus("continuous-integration/jenkins:Sonar","Pending","PENDING")
-                                        sleep 60 
-                                        setGithubStatus("continuous-integration/jenkins:Sonar","Completed","SUCCESS")
-                                        }
+                                       
+                            sh './gradlew sonarqube'
+
                                     }
                 }
+              }
+             
             }
 
 
