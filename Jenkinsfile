@@ -130,8 +130,8 @@ pipeline {
         stage('Sonar') {
              
                   steps {
-                      withSonarQubeEnv('Sonar') {
-                           sh './gradlew sonarqube'
+                      withSonarQubeEnv('SonarDev') {
+                           sh './gradlew sonarqube -Dsonar.host.url=http://sonar.steadystatecd.com -Dsonar.login=3363177bf3a2cac9faffb0cbe292e94beb717021'
 
                         }
                   }
