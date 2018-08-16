@@ -54,7 +54,7 @@ buildscript {
 			],
 
             misc: [
-				'org.keycloak:keycloak-core:4.1.0.Final',
+				'org.keycloak:keycloak-core:4.2.1.Final',
                 'io.jsonwebtoken:jjwt:0.9.1',
                 'javax.inject:javax.inject:1',
                 'javax.validation:validation-api',
