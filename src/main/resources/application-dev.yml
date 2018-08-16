@@ -1,3 +1,3 @@
 spring:
   datasource:
-    url: jdbc:postgresql://devdb1.cby02zmi8jpc.us-east-1.rds.amazonaws.com:5432/devdb1
+    url: jdbc:postgresql://devdb.cby02zmi8jpc.us-east-1.rds.amazonaws.com:5432/devdb
