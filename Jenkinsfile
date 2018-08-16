@@ -152,7 +152,11 @@ pipeline {
                 branch 'master'
             }
             steps {
-                echo 'Build Docker Image'
+                sh 'docker build . -t 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER}'
+                sh 'docker tag 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:latest'
+                sh '/home/jenkins/ecr-login.sh | /bin/bash '
+                sh 'docker push 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER}'
+                sh 'docker push 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:latest'
             }
         }
 
@@ -163,8 +167,8 @@ pipeline {
             }
 
             steps {
-                echo 'Deploy DEV'
-                echo 'Sanity Checks'
+                 sh 'ecs-deploy -c dev-APICluster -n userapi -i 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} -r us-east-1 --timeout 420 '
+
             }
         
         }
@@ -189,7 +193,7 @@ pipeline {
 
          stage('QA deploy') {
              when {
-                branch 'develop'
+                branch 'master'
             }
            
             steps {
@@ -201,7 +205,7 @@ pipeline {
 
         stage('QA Functional Tests') {
             when {
-                branch 'develop'
+                branch 'master'
             }
             steps {
                 echo 'Unit Test'
@@ -211,7 +215,7 @@ pipeline {
 
          stage('Performance TEST') {
             when {
-                branch 'develop'
+                branch 'master'
             }
             steps {
                 echo 'Deploy QA'
@@ -233,7 +237,39 @@ pipeline {
     }
     post { 
         always { 
-            echo 'Always'
+             publishHTML (target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'build/reports/checkstyle',
+                    reportFiles: '*.html',
+                    reportName: "CheckStyle Report"
+                    ])
+               publishHTML (target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'build/reports/findbugs',
+                    reportFiles: '*.html',
+                    reportName: "Findbugs Report"
+                    ])
+                   publishHTML (target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'build/reports/pmd',
+                    reportFiles: '*.html',
+                    reportName: "PMD Report"
+                    ])
+
+                        publishHTML (target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'build/reports',
+                    reportFiles: 'dependency-check-report.html',
+                    reportName: "Dependency Check Report"
+                    ])
             
         }
 
@@ -244,15 +280,7 @@ pipeline {
         success { 
             echo 'Success!'
 
-                script {
-                    if (isGitPRBranch()) {
-
-                            
-                            sendSlackNotification("SUCCESS","",true)
-                            
-                            }
-                }
-
+    
         }
 
         unstable { 
