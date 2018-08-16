@@ -32,7 +32,8 @@ pipeline {
                     repoUrl= gitRepoURL()
                     branchName = gitBranchName()
                     ispr = isGitPRBranch()
-                echo "${repoUrl} ${branchName} ${ispr}" 
+                    sh './gradlew clean build'
+
                 }
 
             }
@@ -46,29 +47,46 @@ pipeline {
                                    script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:Unit test","Pending","PENDING")
-                                        sleep 60 
+                                        def TESTRESULT=sh script: './gradlew test',returnStatus: true
                                         setGithubStatus("continuous-integration/jenkins:Unit test","Completed","SUCCESS")
                                         }
                                     }
                         },
                          "Security Test ": {
-                            echo 'Run integration testing'
+                           script {
+                                sh './gradlew dependencyCheckAnalyze'
+                            }
                         }
                         
                 )
             }
         }         
 
-        stage('Static Code Analysis') {
+        stage('Code Analysis') {
             steps {
                
                 parallel(
+                        "Lint ": {
+                            
+                                   script {
+                                        if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:Lint","Pending","PENDING")
+                                        
+                                        sh './gradlew lint'
+
+                                        setGithubStatus("continuous-integration/jenkins:Lint","Completed","SUCCESS")
+                                        }
+                                    }
+                            
+                        },
                         "PMD ": {
-                            echo 'Run integration tests'
+                            
                                    script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:PMD","Pending","PENDING")
-                                        sleep 60 
+                                        
+                                        sh './gradlew pmdMain'
+
                                         setGithubStatus("continuous-integration/jenkins:PMD","Completed","SUCCESS")
                                         }
                                     }
@@ -78,7 +96,9 @@ pipeline {
                                    script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:CheckStyle","Pending","PENDING")
-                                        sleep 60 
+                                        
+                                        sh './gradlew check'
+                                        
                                         setGithubStatus("continuous-integration/jenkins:CheckStyle","Completed","SUCCESS")
                                         }
                                     }
@@ -87,25 +107,21 @@ pipeline {
                                    script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:FindBugs","Pending","PENDING")
-                                        sleep 60 
+                                        
+                                        sh './gradlew findbugsMain'
+                                        
                                         setGithubStatus("continuous-integration/jenkins:FindBugs","Completed","SUCCESS")
                                         }
                                     }
                         },
-                        "Sonar Scan": {
-                                   script {
-                                        if (isGitPRBranch()) {
-                                        setGithubStatus("continuous-integration/jenkins:Sonar","Pending","PENDING")
-                                        sleep 60 
-                                        setGithubStatus("continuous-integration/jenkins:Sonar","Completed","SUCCESS")
-                                        }
-                                    }
-                        },
+                     
                         "OWASP Check": {
                                    script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:OWASP","Pending","PENDING")
-                                        sleep 60 
+                                       
+                                        sh './gradlew dependencyCheckAnalyze'
+                                       
                                         setGithubStatus("continuous-integration/jenkins:OWASP","Completed","SUCCESS")
                                         }
                                     }
@@ -115,9 +131,24 @@ pipeline {
             }
         }
 
+
+        stage('Sonar') {
+             
+                steps {
+                      script {
+                                        if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:Sonar","Pending","PENDING")
+                                        sleep 60 
+                                        setGithubStatus("continuous-integration/jenkins:Sonar","Completed","SUCCESS")
+                                        }
+                                    }
+                }
+            }
+
+
         stage('Build Docker') {
             when {
-                branch 'develop'
+                branch 'master'
             }
             steps {
                 echo 'Build Docker Image'
@@ -127,7 +158,7 @@ pipeline {
         stage('Dev Deploy') {
 
                 when {
-                branch 'develop'
+                branch 'master'
             }
 
             steps {
@@ -139,7 +170,7 @@ pipeline {
 
         stage('DEV Test') {
             when {
-                branch 'develop'
+                branch 'master'
             }
             steps {
                          
