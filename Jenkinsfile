@@ -131,7 +131,7 @@ pipeline {
              
                   steps {
                       withSonarQubeEnv('SonarDev') {
-                           sh './gradlew sonarqube -Dsonar.host.url=http://sonar.steadystatecd.com -Dsonar.login=3363177bf3a2cac9faffb0cbe292e94beb717021'
+                           sh './gradlew sonarqube -Dsonar.host.url=http://sonar.steadystatecd.com -Dsonar.login=$SONAR_TOKEN'
 
                         }
                   }
