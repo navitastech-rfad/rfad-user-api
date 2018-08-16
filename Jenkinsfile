@@ -128,15 +128,13 @@ pipeline {
 
 
         stage('Sonar') {
-             withSonarQubeEnv('Sonar') {
+             
                   steps {
-                      script {
-                                       
-                            sh './gradlew sonarqube'
+                      withSonarQubeEnv('Sonar') {
+                           sh './gradlew sonarqube'
 
-                                    }
-                }
-              }
+                        }
+                  }
              
             }
 
