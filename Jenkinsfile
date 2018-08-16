@@ -27,13 +27,12 @@ pipeline {
                 
                 echo 'Build'
                 script {
-                    
+                    sh 'printenv'
                     
                     repoUrl= gitRepoURL()
                     branchName = gitBranchName()
                     ispr = isGitPRBranch()
-                      echo "${repoUrl} ${branchName} ${ispr}" 
-                      sh './gradlew clean build'
+                echo "${repoUrl} ${branchName} ${ispr}" 
                 }
 
             }
@@ -47,152 +46,100 @@ pipeline {
                                    script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:Unit test","Pending","PENDING")
-                                        }
-                                        
-                                        def TESTRESULT=sh script: './gradlew test',returnStatus: true
-                                         
-                                        if (isGitPRBranch()) {
+                                        sleep 60 
                                         setGithubStatus("continuous-integration/jenkins:Unit test","Completed","SUCCESS")
                                         }
                                     }
                         },
                          "Security Test ": {
-                            script {
-                                sh './gradlew dependencyCheckAnalyze'
-                            }
+                            echo 'Run integration testing'
                         }
                         
                 )
             }
         }         
 
-        stage('Lint') {
- 
+        stage('Static Code Analysis') {
             steps {
                
-               script {
-                                        if (isGitPRBranch()) {
-                                        setGithubStatus("continuous-integration/jenkins:Lint","Pending","PENDING")
-                                        }
-                                        sh './gradlew lint'
-                                         
-                                        if (isGitPRBranch()) {
-                                        setGithubStatus("continuous-integration/jenkins:Lint","Completed","SUCCESS")
-                                        }
-                                    }
-
-            }
-        
-        }
-
-            stage('PMD') {
- 
-            steps {
-               
-              script {
+                parallel(
+                        "PMD ": {
+                            echo 'Run integration tests'
+                                   script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:PMD","Pending","PENDING")
-                                        }
-
-                                        sh './gradlew pmdMain'
-                                         
-                                        
-                                         if (isGitPRBranch()) {
+                                        sleep 60 
                                         setGithubStatus("continuous-integration/jenkins:PMD","Completed","SUCCESS")
                                         }
                                     }
-                                    
-            }
-        
-        }
-
-        stage('CheckStyle') {
- 
-            steps {
-               
-                script {
+                            
+                        },
+                         "CheckStyle ": {
+                                   script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:CheckStyle","Pending","PENDING")
-                                        }
-                                        sh './gradlew check'
-                                       
-                                         if (isGitPRBranch()) {
+                                        sleep 60 
                                         setGithubStatus("continuous-integration/jenkins:CheckStyle","Completed","SUCCESS")
                                         }
                                     }
-                                    
-            }
-        
-        }
-
-                stage('FindBugs') {
- 
-            steps {
-               
-           script {
+                        },
+                         "FindBugs ": {
+                                   script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:FindBugs","Pending","PENDING")
-                                        }
-                                        sh './gradlew findbugsMain'
-                                       
-                                        if (isGitPRBranch()) {
+                                        sleep 60 
                                         setGithubStatus("continuous-integration/jenkins:FindBugs","Completed","SUCCESS")
                                         }
                                     }
-                                    
-            }
-        
-        }
-
-
-        stage('Coverage') {
- 
-            steps {
-               
-        script {
+                        },
+                        "Sonar Scan": {
+                                   script {
                                         if (isGitPRBranch()) {
                                         setGithubStatus("continuous-integration/jenkins:Sonar","Pending","PENDING")
-                                        
-                                         sh './gradlew sonarqube -Dsonar.host.url=http://sonar.steadystatecd.com -Dsonar.login=3363177bf3a2cac9faffb0cbe292e94beb717021'
-                                            
+                                        sleep 60 
                                         setGithubStatus("continuous-integration/jenkins:Sonar","Completed","SUCCESS")
                                         }
                                     }
-                                    
+                        },
+                        "OWASP Check": {
+                                   script {
+                                        if (isGitPRBranch()) {
+                                        setGithubStatus("continuous-integration/jenkins:OWASP","Pending","PENDING")
+                                        sleep 60 
+                                        setGithubStatus("continuous-integration/jenkins:OWASP","Completed","SUCCESS")
+                                        }
+                                    }
+                        }
+                        
+                )
             }
-        
         }
-       
+
         stage('Build Docker') {
             when {
-                branch 'master'
+                branch 'develop'
             }
             steps {
-                sh 'docker build . -t 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER}'
-                sh 'docker tag 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:latest'
-                sh '/home/jenkins/ecr-login.sh | /bin/bash '
-                sh 'docker push 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER}'
-                sh 'docker push 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:latest'
+                echo 'Build Docker Image'
             }
         }
 
         stage('Dev Deploy') {
 
                 when {
-                branch 'master'
+                branch 'develop'
             }
 
             steps {
-
-              sh 'ecs-deploy -c dev-APICluster -n userapi -i 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} -r us-east-1 --timeout 420 '
-
+                echo 'Deploy DEV'
+                echo 'Sanity Checks'
             }
         
         }
 
         stage('DEV Test') {
             when {
-                branch 'master'
+                branch 'develop'
             }
             steps {
                          
@@ -210,19 +157,19 @@ pipeline {
 
          stage('QA deploy') {
              when {
-                branch 'master'
+                branch 'develop'
             }
            
             steps {
-                    sh 'ecs-deploy -c qa-APICluster -n userapi -i 550522744793.dkr.ecr.us-east-1.amazonaws.com/userapi:${BUILD_NUMBER} -r us-east-1 --timeout 420 '
-
+                echo 'Deploy QA'
+                echo 'Sanity Checks'
             }
         
         }
 
         stage('QA Functional Tests') {
             when {
-                branch 'master'
+                branch 'develop'
             }
             steps {
                 echo 'Unit Test'
@@ -232,7 +179,7 @@ pipeline {
 
          stage('Performance TEST') {
             when {
-                branch 'master'
+                branch 'develop'
             }
             steps {
                 echo 'Deploy QA'
@@ -255,45 +202,11 @@ pipeline {
     post { 
         always { 
             echo 'Always'
-           
-            publishHTML (target: [
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: false,
-                    keepAll: true,
-                    reportDir: 'build/reports/checkstyle',
-                    reportFiles: '*.html',
-                    reportName: "CheckStyle Report"
-                    ])
-               publishHTML (target: [
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: false,
-                    keepAll: true,
-                    reportDir: 'build/reports/findbugs',
-                    reportFiles: '*.html',
-                    reportName: "Findbugs Report"
-                    ])
-                   publishHTML (target: [
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: false,
-                    keepAll: true,
-                    reportDir: 'build/reports/pmd',
-                    reportFiles: '*.html',
-                    reportName: "PMD Report"
-                    ])
-
-                        publishHTML (target: [
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: false,
-                    keepAll: true,
-                    reportDir: 'build/reports',
-                    reportFiles: 'dependency-check-report.html',
-                    reportName: "Dependency Check Report"
-                    ])
+            
         }
 
         failure { 
             echo 'Failed'
-            
         }
 
         success { 
@@ -302,7 +215,7 @@ pipeline {
                 script {
                     if (isGitPRBranch()) {
 
-                    
+                            
                             sendSlackNotification("SUCCESS","",true)
                             
                             }
