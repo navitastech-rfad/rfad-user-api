@@ -51,11 +51,6 @@ pipeline {
                                         setGithubStatus("continuous-integration/jenkins:Unit test","Completed","SUCCESS")
                                         }
                                     }
-                        },
-                         "Security Test ": {
-                           script {
-                                sh './gradlew dependencyCheckAnalyze'
-                            }
                         }
                         
                 )
